@@ -6,34 +6,33 @@ import (
 	"time"
 )
 
-//func main() {
-//	randomNums := randomNum(1, 100000, 100000)
-//	a := heapSort(randomNums, 100)
-//	fmt.Println(a) //打印这最大的100个
-//
-//
-//	ch := make(chan int, 2)
-//
-//	// 发送1个数据关闭channel
-//	ch <- 1
-//	ch <- 0
-//	close(ch)
-//	print("close channel\n")
-//
-//	// 不停读数据直到channel没有有效数据
-//	for {
-//		select {
-//		case v, ok := <-ch:
-//			print("v: ", v, ", ok:", ok, "\n")
-//			if !ok {
-//				print("channel is close\n")
-//				return
-//			}
-//		default:
-//			print("nothing\n")
-//		}
-//	}
-//}
+func mainss() {
+	randomNums := randomNum(1, 100000, 100000)
+	a := heapSort(randomNums, 100)
+	fmt.Println(a) //打印这最大的100个
+
+	ch := make(chan int, 2)
+
+	// 发送1个数据关闭channel
+	ch <- 1
+	ch <- 0
+	close(ch)
+	print("close channel\n")
+
+	// 不停读数据直到channel没有有效数据
+	for {
+		select {
+		case v, ok := <-ch:
+			print("v: ", v, ", ok:", ok, "\n")
+			if !ok {
+				print("channel is close\n")
+				return
+			}
+		default:
+			print("nothing\n")
+		}
+	}
+}
 
 func f3() func() int {
 	a := 10086
@@ -62,7 +61,6 @@ func consumer(inCh <-chan int) {
 	}
 }
 
-
 func doWithTimeOut(timeout time.Duration) (int, error) {
 	select {
 	case ret := <-do():
@@ -79,4 +77,3 @@ func do() <-chan int {
 	}()
 	return outCh
 }
-

@@ -1,5 +1,7 @@
 package sync
 
+import "sync"
+
 var (
 	sema    = make(chan struct{}, 1)
 	balance int
@@ -16,4 +18,9 @@ func Balance() int {
 	b := balance
 	<-sema
 	return b
+}
+
+func Sync() {
+	mutex := sync.Mutex{}
+	mutex.Lock()
 }

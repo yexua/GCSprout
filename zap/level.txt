@@ -1,0 +1,2 @@
+{"level":"debug","ts":"2021-01-28 09:22:36","caller":"zap/start_test.go:75","msg":"i am debug","key":"debug"}
+{"level":"info","ts":"2021-01-28 09:22:36","caller":"zap/start_test.go:76","msg":"i am info","key":"info"}

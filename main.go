@@ -1,48 +1,50 @@
 package main
 
 import (
-	"GCSprout/db"
-	"GCSprout/middleware"
+	"GCSprout/zap"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	uberZap "go.uber.org/zap"
 	"net/http"
+	"time"
 )
 
-type AdminLoginInput struct {
-	UserName string `json:"username" form:"username"`
-	Password string `json:"password" form:"password"`
+func main() {
+	gin.DisableConsoleColor()
+	r := gin.New()
+	logger, _ := uberZap.NewProduction()
+	defer logger.Sync()
+	r.Use(zap.GinZapMiddleware(logger, "2006-01-02 15:04:05", false))
+	//r.Use(zap.RecoveryWithZap(logger, true))
+	r.GET("/ping", func(c *gin.Context) {
+
+		time.Sleep(time.Second * 2)
+		logger.Info("业务执行成功")
+
+		c.JSON(http.StatusOK, gin.H{
+			"res": "Hello World",
+		})
+	})
+
+	r.GET("/dlv", TestDlvHandler)
+
+	r.GET("/panic", func(c *gin.Context) {
+		panic("This is a panic!")
+	})
+
+	r.Run(":9090")
 }
 
-func main() {
-	r := gin.Default()
-	r.Use(middleware.TimeMiddleware())
+func TestDlvHandler(c *gin.Context) {
+	fmt.Println("接受到请求")
+	a := 1
+	b := a + 1
+	d := b + 2
+	fmt.Println(a)
+	fmt.Println(b)
+	fmt.Println(d)
 
-	r.Static("/static", "static")
-	r.LoadHTMLGlob("templates/*")
-
-	r.POST("/test", func(c *gin.Context) {
-		admin := &AdminLoginInput{}
-		c.ShouldBind(admin)
-		fmt.Printf("%#v",admin)
-
+	c.JSON(http.StatusOK, gin.H{
+		"res": "Successes!",
 	})
-
-
-	r.POST("/auth", middleware.AuthHandler)
-
-	r.GET("/home", middleware.JWTAuthMiddleware(), middleware.HomeHandler)
-
-
-	r.GET("/", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "index.html", nil)
-	})
-
-
-
-	r.Run()
-
-	db.InitMySQL()
-	db := db.DB.DB()
-	defer db.Close()
-
 }
