@@ -189,6 +189,7 @@ func searchRange(nums []int, target int) []int {
 	return res
 }
 
+// binarySearch 二分查找
 func binarySearch(nums []int, target int) int {
 	left, right := 0, len(nums)
 	for left < right {
