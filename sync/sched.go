@@ -1,6 +1,6 @@
 // @Author : Lik
 // @Time   : 2021/1/26
-package sync
+package main
 
 import (
 	"runtime"

@@ -1,6 +1,6 @@
 // @Author : Lik
 // @Time   : 2021/1/4
-package sync
+package main
 
 import (
 	"fmt"
