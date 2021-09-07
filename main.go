@@ -106,6 +106,7 @@ func compareVersion2(version1 string, version2 string) int {
 	return 0
 }
 
+// 最长不重复子字符串长度
 func lengthOfLongestSubstring(s string) int {
 	max := 0
 
