@@ -2,17 +2,22 @@ package main
 
 import (
 	"GCSprout/zap"
+	"bufio"
+	"container/heap"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	uberZap "go.uber.org/zap"
 	"net/http"
+	"os"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
 )
 
 func main() {
-	balancedStringSplit("RLRRLLRLRL")
+	//findMid([]int{10,11,21,19,21,17,21,18,15})
+	reverseWords()
 }
 
 func serve() {
@@ -220,4 +225,155 @@ func balancedStringSplit(s string) int {
 		}
 	}
 	return res
+}
+
+// https://leetcode-cn.com/problems/ipo/
+func findMaximizedCapital(k int, w int, profits []int, capital []int) int {
+	n := len(profits)
+	arr := make([][2]int, n)
+	for i := 0; i < n; i++ {
+		arr[i][0] = capital[i]
+		arr[i][1] = profits[i]
+	}
+	sort.Slice(arr, func(i, j int) bool {
+		return arr[i][0] < arr[j][0]
+	})
+
+	h := &hp{}
+	for cur := 0; k > 0; k-- {
+		for cur < n && arr[cur][0] <= w {
+			heap.Push(h, arr[cur][1])
+			cur++
+		}
+		if h.Len() == 0 {
+			break
+		}
+		w += heap.Pop(h).(int)
+	}
+	return w
+}
+
+func testFindMaximizedCapital() {
+	findMaximizedCapital(2, 0, []int{1, 2, 3}, []int{0, 1, 1})
+}
+
+type hp struct {
+	sort.IntSlice
+}
+
+func (h hp) Less(i, j int) bool {
+	return h.IntSlice[i] > h.IntSlice[j]
+}
+
+func (h *hp) Push(v interface{}) {
+	h.IntSlice = append(h.IntSlice, v.(int))
+}
+
+func (h *hp) Pop() interface{} {
+	a := h.IntSlice
+	v := a[len(a)-1]
+	h.IntSlice = a[:len(a)-1]
+	return v
+}
+
+func reverseWords() {
+
+	start, end := 0, 0
+	reader := bufio.NewReader(os.Stdin)
+	s, _ := reader.ReadString('\n')
+
+	fmt.Scanln(&start)
+	fmt.Scanln(&end)
+
+	res := ""
+	s = strings.Trim(s, "\n")
+	strs := strings.Split(s, " ")
+	var word []string
+	for i := 0; i < len(strs); i++ {
+		if strs[i] != "" {
+			word = append(word, strs[i])
+		}
+	}
+	for i := 0; i < len(word); i++ {
+		if i == start && i < end {
+			word[i], word[end] = word[end], word[i]
+			start++
+			end--
+		}
+		res = res + word[i] + " "
+	}
+	fmt.Print(res)
+}
+
+func findMid(arr []int) {
+	m := make(map[int]int)
+	for _, v := range arr {
+		if _, ok := m[v]; ok {
+			m[v]++
+		} else {
+			m[v] = 1
+		}
+	}
+	max := 0
+	for _, v := range m {
+		if v > max {
+			max = v
+		}
+	}
+	var nArr []int
+	for i, v := range m {
+		if v == max {
+			nArr = append(nArr, i)
+		}
+	}
+	sort.Ints(nArr)
+	var result float64
+	size := len(nArr)
+	if size%2 == 0 {
+		result = float64(nArr[size/2]+nArr[size/2-1]) / 2
+	} else {
+		result = float64(nArr[size/2])
+	}
+	fmt.Println(result)
+}
+
+func findMin() {
+	s := ""
+	n := 0
+	fmt.Scanln(&s)
+	fmt.Scanln(&n)
+
+	size := len(s)
+	arr := make([]int, size)
+	for i, v := range s {
+		d, _ := strconv.Atoi(string(v))
+		arr[i] = d
+	}
+
+	res := make([]int, size-n)
+	for i, j := n, 0; j < size-n; j++ {
+		res[j] = arr[i]
+		i++
+	}
+
+	min := -1
+	last := -1
+
+	for i := 0; i < size-n; i++ {
+		flag := true
+		for j := n - 1 + i; j > last; j-- {
+			if res[i] >= arr[j] {
+				res[i] = arr[j]
+				min = j
+				flag = false
+			}
+		}
+		last = min
+		if flag {
+			break
+		}
+	}
+	for i := range res {
+		fmt.Print(i)
+	}
 }
