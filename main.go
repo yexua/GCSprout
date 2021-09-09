@@ -12,12 +12,18 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
 
 func main() {
-	//findMid([]int{10,11,21,19,21,17,21,18,15})
-	reverseWords()
+	findMid([]int{10, 11, 21, 19, 21, 17, 21, 18, 15})
+	findMid([]int{1, 2, 2, 2, 3, 4, 3, 4, 4, 5})
+
+	fmt.Println(Median([]int{1, 2, 3, 4}))
+
+	//reverseWords()
+	//findMin2("12345264", 4)
 }
 
 func serve() {
@@ -239,7 +245,9 @@ func findMaximizedCapital(k int, w int, profits []int, capital []int) int {
 		return arr[i][0] < arr[j][0]
 	})
 
-	h := &hp{}
+	h := &hp{
+		bool: true,
+	}
 	for cur := 0; k > 0; k-- {
 		for cur < n && arr[cur][0] <= w {
 			heap.Push(h, arr[cur][1])
@@ -259,10 +267,17 @@ func testFindMaximizedCapital() {
 
 type hp struct {
 	sort.IntSlice
+	bool
 }
 
+// Less 默认小顶堆，bool为true则为大顶堆
 func (h hp) Less(i, j int) bool {
-	return h.IntSlice[i] > h.IntSlice[j]
+
+	if h.bool {
+		return h.IntSlice[i] > h.IntSlice[j]
+	}
+	return h.IntSlice[i] < h.IntSlice[j]
+
 }
 
 func (h *hp) Push(v interface{}) {
@@ -274,6 +289,10 @@ func (h *hp) Pop() interface{} {
 	v := a[len(a)-1]
 	h.IntSlice = a[:len(a)-1]
 	return v
+}
+
+func (h *hp) Top() interface{} {
+	return h.IntSlice[h.Len()-1]
 }
 
 func reverseWords() {
@@ -305,38 +324,80 @@ func reverseWords() {
 	fmt.Print(res)
 }
 
+// 查找一组数据中出现次数最多的数，可以是多个，组成新数组并求出中位数
 func findMid(arr []int) {
 	m := make(map[int]int)
+	max := 1
+	var nArr []int
 	for _, v := range arr {
 		if _, ok := m[v]; ok {
 			m[v]++
+			if m[v] > max {
+				max = m[v]
+				nArr = nArr[:0]
+			}
 		} else {
 			m[v] = 1
 		}
-	}
-	max := 0
-	for _, v := range m {
-		if v > max {
-			max = v
+		if m[v] == max {
+			nArr = append(nArr, v)
 		}
 	}
-	var nArr []int
-	for i, v := range m {
-		if v == max {
-			nArr = append(nArr, i)
-		}
-	}
-	sort.Ints(nArr)
-	var result float64
+
 	size := len(nArr)
+	hpSize := size/2 + 1
+
+	hp := &hp{}
+
+	for i := 0; i < hpSize; i++ {
+		hp.Push(nArr[i])
+	}
+
+	for i := hpSize; i < size; i++ {
+		if nArr[i] > hp.Top().(int) {
+			hp.Pop()
+			hp.Push(nArr[i])
+		}
+	}
+	var result float64
 	if size%2 == 0 {
-		result = float64(nArr[size/2]+nArr[size/2-1]) / 2
+		result = float64(hp.Pop().(int)+hp.Top().(int)) / 2
 	} else {
-		result = float64(nArr[size/2])
+		result = float64(hp.Top().(int))
 	}
 	fmt.Println(result)
 }
 
+func Median(arr []int) float64 {
+	hp := &hp{bool: false}
+	size := len(arr)
+	hpSize := size/2 + 1
+	for i := 0; i < hpSize; i++ {
+		hp.Push(arr[i])
+	}
+
+	for i := hpSize; i < size; i++ {
+		if arr[i] > hp.Top().(int) {
+			hp.Pop()
+			hp.Push(arr[i])
+		}
+	}
+	var result float64
+	if size%2 == 0 {
+		a := hp.Pop().(int)
+		b := hp.Top().(int)
+		result = float64(a+b) / 2.0
+	} else {
+		result = float64(hp.Top().(int))
+	}
+	return result
+}
+
+// 输入的第一行为一个字符串，字符串由0-9字符组成，记录正整数num1，num1的长度小于32
+// 输入的第二行为需要移除的数字的个数，小于num1的长度
+// 输入：2615371
+//       4
+// 输出：131
 func findMin() {
 	s := ""
 	n := 0
@@ -376,4 +437,57 @@ func findMin() {
 	for i := range res {
 		fmt.Print(i)
 	}
+}
+
+func findMin2(s string, n int) {
+	stack := make([]int32, 0, len(s))
+	for _, c := range s {
+		var i int
+		for i = len(stack) - 1; i >= 0 && stack[i] > c && n > 0; i-- {
+			n--
+		}
+		stack = stack[:i+1]
+		stack = append(stack, c)
+	}
+	ans := strings.TrimLeft(string(stack), "0")
+	if ans == "" {
+		ans = "0"
+	}
+	fmt.Println(ans)
+}
+
+type LinkNode struct {
+	val  int
+	next *LinkNode
+}
+
+// 判断一个链表是否有环
+func test(head *LinkNode) {
+	var fast *LinkNode
+	var slow *LinkNode
+
+	fast, slow = head, head
+
+	for slow != nil && fast.next != nil {
+		slow = slow.next
+		fast = fast.next.next
+		if slow == fast {
+			fmt.Println("存在环")
+		}
+	}
+	fmt.Println("不存在环")
+}
+
+func gro() {
+
+	var wg sync.WaitGroup
+	wg.Add(2)
+	for i := 0; i < 2; i++ {
+		go func() {
+			defer wg.Done()
+			fmt.Println("hello")
+		}()
+	}
+	wg.Wait()
+	fmt.Println("world")
 }
